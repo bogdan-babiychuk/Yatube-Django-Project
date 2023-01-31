@@ -91,3 +91,8 @@ class PostURLTest(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
+
+    def test_404(self):
+        not_found_page = '/defeeg'
+        response = self.guest_client.get(not_found_page)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
