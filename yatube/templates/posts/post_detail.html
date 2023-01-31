@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load user_filters %}
+{% block title %}Пост {{ post.text|slice:":30" }} {% endblock %}
+{% load thumbnail %}
+{% block content %}
+  <div class="row">
+    <aside class="col-12 col-md-3">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          Дата публикации: {{ post.pub_date|date:"d E Y" }}
+        </li>
+        {% if post.group %}
+          <li class="list-group-item">
+            Группа: {{ post.group.title }}
+          </li>
+        {% endif %}
+        <li class="list-group-item">
+          Автор: {{ post.author }}
+        </li>
+        <li class="list-group-item">
+          Всего постов автора:  {{ post.author.posts.count }}
+        </li>
+        <li class="list-group-item">
+          <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a>
+        </li>
+        <li class="list-group-item">
+        <a href="{% url 'posts:group_posts' post.group.slug %}">все записи группы</a>
+        </li> 
+      </ul>
+    </aside>
+    <article class="col-12 col-md-9">
+      {{ post.text|linebreaks }}
+      {% if request.user == post.author %}
+        <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
+          Редактировать запись
+        </a>
+        {% include 'posts/includes/q.html' %}  
+      {% endif %} 
+      {% include 'posts/includes/comment.html'%}
+    </article>
+{% endblock %}

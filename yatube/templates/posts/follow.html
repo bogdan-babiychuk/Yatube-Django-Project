@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load cache %}
+{% block title %}
+Подписки
+{% endblock %}
+
+{% block content %}
+{% include 'posts/includes/switcher.html'%}
+
+  {% for post in page_obj %}
+  <ul>
+    <li>
+      Автор: {{ post.author }}
+    </li>
+    <li>
+      Дата публикации:{{ post.pub_date|date:"d E Y" }}
+    </li>
+  </ul>
+  <p>{{ post.text }}</p>
+  {% include 'posts/includes/q.html' %}      
+  {% if post.group %}   
+  <a href="{% url 'posts:group_posts' post.group.slug %}">все записи группы</a>
+  {% endif %} 
+  {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
+  
+  {% include 'posts/includes/paginator.html' %}
+
+{% endblock %} 

@@ -1,0 +1,33 @@
+{% extends 'base.html' %} 
+{% load thumbnail %}
+{% block title %}{{ group }}{% endblock %} 
+
+{% block content %}
+    <div class="container py-5">
+      <h1> {{ group.title }}</h1>
+    <p>
+       {{ group.description }}
+    </p>
+      {% for post in page_obj %}
+      <article>
+        <ul>
+          <li>
+            Автор: {{ post.author.get_full_name }}
+          </li>
+          <li>
+            Дата Публикации: {{ post.pub_date|date:"d E Y" }}
+          </li>
+        </ul>
+        <p>
+          {{ post.text }}
+        </p>
+        {% include 'posts/includes/q.html' %}  
+        {% if post.text %}
+          <a href="{% url 'posts:post_detail' post.id %}">подробная информация</a>       
+        {% endif %}
+        {% if not forloop.last %}<hr>{% endif %}
+      </article>
+      {% endfor %} 
+      {% include 'posts/includes/paginator.html' %}
+    </div>
+{% endblock %}
