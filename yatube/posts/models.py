@@ -43,14 +43,13 @@ class Post(models.Model):
         'Картинка',
         upload_to='posts/',
         blank=True
-    )  
+    )
 
     class Meta:
         ordering = ['-pub_date']
 
     def __str__(self):
         return self.text[:SHORT_WORD]
-
 
 
 class Comment(models.Model):
@@ -70,7 +69,7 @@ class Comment(models.Model):
     text = models.TextField(
         max_length=200,
     )
-    
+
     created = models.DateTimeField(
         verbose_name='Дата коммента',
         auto_now_add=True,

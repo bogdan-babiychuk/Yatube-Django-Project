@@ -123,13 +123,14 @@ class CommentTest(TestCase):
         comment = Comment.objects.create(
             post=self.post,
             author=self.user,
-            text = 'Текст коммента'
+            text='Текст коммента'
         )
-        
+
         comment_count = Comment.objects.count()
         form_data = {'text': comment}
         response = self.authorized_client.get(reverse('posts:post_detail',
-                                              kwargs={'post_id': self.post.id}),
+                                              kwargs={'post_id':
+                                                      self.post.id}),
                                               data=form_data,
                                               folow=True)
         new_comment = Comment.objects.get(id=self.post.id)

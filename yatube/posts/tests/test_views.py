@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
-from posts.models import Group, Post, User, Comment
+from posts.models import Group, Post, User
 
 
 class TestView(TestCase):

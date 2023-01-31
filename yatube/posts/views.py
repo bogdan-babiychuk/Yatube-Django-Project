@@ -3,7 +3,6 @@ from .models import Group, Post, User, Follow
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm
 from users.utils import paginate
-from django.views.decorators.cache import cache_page
 
 RECORD: int = 10
 NUMBER_30: int = 30
@@ -43,8 +42,7 @@ def profile(request, username):
         'count_posts': count_posts,
         'page_obj': page_obj,
         'title': title,
-        'subscribe': subscribe,
-         }
+        'subscribe': subscribe}
     return render(request, 'posts/profile.html', context)
 
 
@@ -87,7 +85,9 @@ def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post_id=post_id)
-    form = PostForm(request.POST or None, instance=post, files=request.FILES or None)
+    form = PostForm(request.POST or None,
+                    instance=post,
+                    files=request.FILES or None)
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id=post_id)
@@ -97,6 +97,7 @@ def post_edit(request, post_id):
         'post': post,
     }
     return render(request, 'posts/post_edit.html', context)
+
 
 @login_required
 def add_comment(request, post_id):
@@ -108,7 +109,8 @@ def add_comment(request, post_id):
         comment.author = request.user
         comment.post = post
         comment.save()
-    return redirect('posts:post_detail', post_id=post_id) 
+    return redirect('posts:post_detail', post_id=post_id)
+
 
 @login_required
 def follow_index(request):
