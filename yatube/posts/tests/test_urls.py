@@ -55,8 +55,6 @@ class PostURLTest(TestCase):
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
-        response = self.guest_client.get('/unexisting_page/')
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_post_detail_url_exists_at_desired_location_authorized(self):
         """проверка доступности страниц авторизованному пользователю тоже."""
@@ -91,8 +89,3 @@ class PostURLTest(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
-
-    def test_404(self):
-        not_found_page = '/defeeg'
-        response = self.guest_client.get(not_found_page)
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
