@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from http import HTTPStatus
 from django.shortcuts import get_object_or_404
 from posts.models import Post, Group, User, Comment
@@ -143,3 +144,81 @@ class CommentTest(TestCase):
             with self.subTest(value=value):
                 self.assertEqual(value, value_comment)
         self.assertEqual(Comment.objects.count(), comment_count)
+
+
+class ImageExsitsContext(TestCase):
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username='wtf')
+        cls.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+
+    def setUp(self):
+        self.guest_client = Client()
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
+
+    def test_urls_have_img(self):
+
+        uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=self.small_gif,
+            content_type='image/gif'
+        )
+        self.group = Group.objects.create(
+            title='test-группа',
+            slug='test-slug',
+            description='test-описание группы'
+        )
+
+        self.post = Post.objects.create(
+            author=self.user,
+            text='text-текст',
+            group=self.group,
+            image=uploaded,
+        )
+
+        urls = {
+            reverse('posts:index'),
+            reverse('posts:group_posts', kwargs={'slug': 'test-slug'}),
+            reverse('posts:profile', kwargs={'username': 'wtf'}),
+        }
+        for page in urls:
+            with self.subTest(post=page):
+                response = self.guest_client.get(page)
+        img = response.context['page_obj'][0].image.name
+        self.assertEqual(self.post.image.name, img)
+
+    def test_post_detail_have_img(self):
+
+        uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=self.small_gif,
+            content_type='image/gif'
+        )
+
+        self.group = Group.objects.create(
+            title='test-группа',
+            slug='test-slug',
+            description='test-описание группы'
+        )
+
+        self.post = Post.objects.create(
+            author=self.user,
+            text='text-текст',
+            group=self.group,
+            image=uploaded
+        )
+
+        response_for_detail = self.guest_client.get(
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
+        )
+
+        img_for_detail = response_for_detail.context['post'].image.name
+
+        self.assertIn(self.post.image.name, img_for_detail)
