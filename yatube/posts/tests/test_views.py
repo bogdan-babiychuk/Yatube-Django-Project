@@ -181,8 +181,7 @@ class ImageExsitsContext(TestCase):
     @classmethod
     def setUpclass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='wtf')
-        cls.authorized_client.force_login(cls.user)
+        cls.user = User.objects.create_user(username='Bogdan')
         cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -199,15 +198,24 @@ class ImageExsitsContext(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        self.user = User.objects.create_user(username='Bogdan')
         self.guest_client = Client()
         self.authorized_client = Client()
-
-    def test_urls_have_img(self):
-        uploaded = SimpleUploadedFile(
+        self.authorized_client.force_login(self.user)
+        self.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        self.uploaded = SimpleUploadedFile(
             name='small.gif',
             content=self.small_gif,
             content_type='image/gif'
         )
+
         self.group = Group.objects.create(
             title='test-группа',
             slug='test-slug',
@@ -217,10 +225,10 @@ class ImageExsitsContext(TestCase):
             author=self.user,
             text='text-текст',
             group=self.group,
-            image=uploaded,
-
-
+            image=self.uploaded,
         )
+
+    def test_urls_have_img(self):
         urls = {
             reverse('posts:index'),
             reverse('posts:group_posts', kwargs={'slug': 'test-slug'}),
@@ -234,27 +242,6 @@ class ImageExsitsContext(TestCase):
         self.assertEqual(self.post.image.name, img)
 
     def test_post_detail_have_img(self):
-
-        uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=self.small_gif,
-            content_type='image/gif'
-
-
-        )
-
-        self.group = Group.objects.create(
-            title='test-группа',
-            slug='test-slug',
-            description='test-описание группы'
-        )
-
-        self.post = Post.objects.create(
-            author=self.user,
-            text='text-текст',
-            group=self.group,
-            image=uploaded
-        )
 
         response_for_detail = self.guest_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
