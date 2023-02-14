@@ -11,6 +11,7 @@ from posts.models import Group, Post, User
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class TestView(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -27,6 +28,12 @@ class TestView(TestCase):
             author=cls.user,
             group=cls.group,
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()

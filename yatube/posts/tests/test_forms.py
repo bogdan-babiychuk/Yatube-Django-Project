@@ -1,10 +1,16 @@
+import shutil
+import tempfile
+from django.conf import settings
 from http import HTTPStatus
 from django.shortcuts import get_object_or_404
 from posts.models import Post, Group, User, Comment
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -26,6 +32,12 @@ class PostFormTests(TestCase):
             author=cls.user,
             group=cls.group,
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()
@@ -106,38 +118,37 @@ class PostFormTests(TestCase):
 
 class CommentTest(TestCase):
     def test_comment(self):
-        self.user = User.objects.create_user(username='wtf')
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-        self.group = Group.objects.create(
+        user = User.objects.create_user(username='wtf')
+        authorized_client = Client()
+        authorized_client.force_login(user)
+        group = Group.objects.create(
             title='test-группа',
             slug='test-slug',
             description='test-описание группы')
 
-        self.post = Post.objects.create(
+        post = Post.objects.create(
             text='text-текст',
-            author=self.user,
-            group=self.group,
+            author=user,
+            group=group,
         )
         comment = Comment.objects.create(
-            post=self.post,
-            author=self.user,
+            post=post,
+            author=user,
             text='Текст коммента'
         )
 
         comment_count = Comment.objects.count()
         form_data = {'text': comment}
-        response = self.authorized_client.get(reverse('posts:post_detail',
-                                              kwargs={'post_id':
-                                                      self.post.id}),
-                                              data=form_data,
-                                              folow=True)
-        new_comment = Comment.objects.get(id=self.post.id)
+        response = authorized_client.get(reverse('posts:post_detail',
+                                         kwargs={'post_id':
+                                                 post.id}),
+                                         data=form_data,
+                                         folow=True)
+        new_comment = Comment.objects.get(id=post.id)
         self.assertContains(response, 'Текст коммента')
         values = {
             comment.text: new_comment.text,
-            self.user: new_comment.author
+            user: new_comment.author
         }
         for value, value_comment in values.items():
             with self.subTest(value=value):
