@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from posts.models import Post, Group, User, Comment
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.core.cache import cache
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -43,7 +44,7 @@ class PostFormTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-
+    
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
         tasks_count = Post.objects.count()
@@ -56,11 +57,16 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True,
         )
+
+        cache.clear()
         self.assertRedirects(response,
                              reverse('posts:profile',
                                      args=[get_object_or_404(User,
                                                              username='wtf')]))
+        cache.clear()                                                     
         self.assertEqual(Post.objects.count(), tasks_count + 1)
+
+        cache.clear()
         self.assertTrue(
             Post.objects.filter(
                 group=self.group,
@@ -82,7 +88,9 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
+        cache.clear()
         self.assertEqual(Post.objects.count(), tasks_count)
+        cache.clear()
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_edit_post(self):
@@ -98,17 +106,20 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
+        cache.clear()
         self.assertRedirects(
             response,
             reverse(
                 'posts:post_detail',
                 kwargs={'post_id': f'{self.post.id}'}
             ))
+        cache.clear()
         self.assertTrue(
             Post.objects.filter(
                 text='Тестовый тест 2',
                 group=self.group_new.id
             ).exists())
+        cache.clear()
         self.assertFalse(
             Post.objects.filter(
                 text='Тестовый текст',
