@@ -44,7 +44,7 @@ class PostFormTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-    
+
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
         tasks_count = Post.objects.count()
@@ -63,7 +63,7 @@ class PostFormTests(TestCase):
                              reverse('posts:profile',
                                      args=[get_object_or_404(User,
                                                              username='wtf')]))
-        cache.clear()                                                     
+        cache.clear()
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
         cache.clear()
