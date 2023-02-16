@@ -35,7 +35,7 @@ class TestView(TestCase):
         super().tearDownClass()
 
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
-    
+
     def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()
@@ -66,13 +66,11 @@ class TestView(TestCase):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.guest_client.get(reverse('posts:index'))
 
-
         self.assertIn('page_obj', response.context)
         post_object = response.context['page_obj'][0]
         author = post_object.author
         text = post_object.text
         group = post_object.group
-
 
         self.assertEqual(author, self.user)
 
