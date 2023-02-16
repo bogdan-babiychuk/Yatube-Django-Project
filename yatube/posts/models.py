@@ -70,6 +70,9 @@ class Comment(models.Model):
         max_length=200,
     )
 
+    def __str__(self):
+        return self.text[:200]
+
     created = models.DateTimeField(
         verbose_name='Дата коммента',
         auto_now_add=True,
@@ -96,3 +99,6 @@ class Follow(models.Model):
                 name='unique_follow'
             ),
         ]
+
+    def __str__(self):
+        return self.user

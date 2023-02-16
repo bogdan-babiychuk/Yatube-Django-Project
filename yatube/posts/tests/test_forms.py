@@ -44,6 +44,7 @@ class PostFormTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
@@ -58,15 +59,12 @@ class PostFormTests(TestCase):
             follow=True,
         )
 
-        cache.clear()
         self.assertRedirects(response,
                              reverse('posts:profile',
                                      args=[get_object_or_404(User,
                                                              username='wtf')]))
-        cache.clear()
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
-        cache.clear()
         self.assertTrue(
             Post.objects.filter(
                 group=self.group,
@@ -88,9 +86,7 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        cache.clear()
         self.assertEqual(Post.objects.count(), tasks_count)
-        cache.clear()
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_edit_post(self):
@@ -106,20 +102,17 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        cache.clear()
         self.assertRedirects(
             response,
             reverse(
                 'posts:post_detail',
                 kwargs={'post_id': f'{self.post.id}'}
             ))
-        cache.clear()
         self.assertTrue(
             Post.objects.filter(
                 text='Тестовый тест 2',
                 group=self.group_new.id
             ).exists())
-        cache.clear()
         self.assertFalse(
             Post.objects.filter(
                 text='Тестовый текст',
